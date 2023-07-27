@@ -10,7 +10,7 @@
 
 ![test.gif](https://upload-images.jianshu.io/upload_images/12057079-45628ea79747f5e4.gif?imageMogr2/auto-orient/strip)
 
-##### 3.测试路径
+##### 3.테스트 경로
 
 ```java
 //홈페이지 경로:
