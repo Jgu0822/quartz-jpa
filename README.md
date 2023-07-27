@@ -1,25 +1,25 @@
-# Quartz定时调度jar包的执行Demo
+# Quartz에서 jar 패키지의 실행을 예약합니다.Demo
 
-#### 1.Quartz简介
+#### 1.Quartz 소개
 
-​	Quartz框架的核心是调度器。调度器负责管理Quartz应用运行时环境。调度器不是靠自己做所有的工作，而是依赖框架内一些非常重要的部件。Quartz不仅仅是线程和线程管理。为确保可伸缩性，Quartz采用了基于多线程的架构。启动时，框架初始化一套worker线程，这套线程被调度器用来执行预定的作业。这就是Quartz怎样能并发运行多个作业的原理。Quartz依赖一套松耦合的线程池管理部件来管理线程环境。
+​	Quartz 프레임워크의 핵심은 스케줄러입니다.스케줄러는 Quartz 애플리케이션 런타임 환경을 관리합니다.스케줄러는 스스로 모든 작업을 수행하는 것이 아니라 프레임워크 내에서 매우 중요한 부품에 의존합니다.Quartz는 스레드와 스레드 관리만 하는 것이 아닙니다.확장성을 보장하기 위해 Quartz는 다중 스레드 기반 아키텍처를 사용합니다.시작할 때 프레임은 스케줄러가 예약된 작업을 수행하는 데 사용하는 워크러 스레드 세트를 초기화합니다.쿼츠가 여러 작업을 동시에 실행할 수 있는 원리다.Quartz는 스레드 환경을 관리하기 위해 느슨하게 결합된 스레드 풀 관리 위젯 세트에 의존합니다.
 
-####  2.项目相关
+####  2.프로젝트 관련
 
-​	该定时器Demo用于定时执行制定路径下的jar包的编译,也可以用于普通的任务调度.通过对任务的查询修改删除来管理整个列表文件.可以通关开启和关闭来更改jar的开始执行状态(开启后如果需要停止只能关闭或重启服务器才能生效,具体的解决办法还在改进中).相关的一整套的UI界面比较简略,可以进行二次开发,主要整合了JPA的分页查询,可以查看相关代码部分.
+​	이 타이머 Demo는 정해진 경로에서 jar 패킷의 컴파일을 정기적으로 실행하기 위해 사용되며 일반적인 작업 스케줄에도 사용될 수 있다.전체 목록 파일은 작업에 대한 쿼리를 수정하여 삭제함으로써 관리됩니다.jar의 시작 실행 상태를 변경하기 위해 스위치를 켜고 끌 수 있다(켜고 나서 정지할 필요가 있으면 서버를 종료하거나 재시작해야 효력이 발생하며, 구체적인 해결책은 아직 개선 중이다).관련 UI 인터페이스 세트는 비교적 간략하여 2차 개발이 가능하며, 주로 JPA 페이지 쿼리를 통합하여 관련 코드 부분을 볼 수 있습니다.
 
 ![test.gif](https://upload-images.jianshu.io/upload_images/12057079-45628ea79747f5e4.gif?imageMogr2/auto-orient/strip)
 
 ##### 3.测试路径
 
 ```java
-//主页路径:
+//홈페이지 경로:
 http://localhost:9090/
-//启动jar的路径(这里的我只是建了一个简单的springboot的helloword的Jar包,相关jar包在项目中可以找到)
+//jar를 작동시키는 경로 (여기 있는 나는 간단한 springboot의 helloword의 Jar 패키지를 만들었을 뿐이며, 관련 jar 패키지는 프로젝트에서 찾을 수 있습니다)
 http://localhost:8088/sayHello
 ```
 
-##### 4.代码相关
+##### 4.코드관련
 
 ##### QuartzServiceImpl:
 
@@ -35,17 +35,17 @@ public class QuartzServiceImpl implements QuartzService {
         return repository.getById(id);
     }
 
-    //通过Id获取Job
+    //Id로 Job 가져오기
     public JobEntity getJobEntityById(Integer id) {
         return repository.getById(id);
     }
-    //从数据库中加载获取到所有Job
+    // 데이터베이스에서 모든 Job을 불러옵니다
     public List<JobEntity> loadJobs() {
         List<JobEntity> list = new ArrayList<>();
         repository.findAll().forEach(list::add);
         return list;
     }
-    //获取JobDataMap.(Job参数对象)
+    // JobDataMap을 가져옵니다.(Job 매개 변수 개체)
     public JobDataMap getJobDataMap(JobEntity job) {
         JobDataMap map = new JobDataMap();
         map.put("name", job.getName());
@@ -58,7 +58,7 @@ public class QuartzServiceImpl implements QuartzService {
         map.put("status", job.getStatus());
         return map;
     }
-    //获取JobDetail,JobDetail是任务的定义,而Job是任务的执行逻辑,JobDetail里会引用一个Job Class来定义
+    // JobDetail을 얻으면, JobDetail은 작업의 정의이고, Job은 작업의 실행 논리이며, JobDetail에서는 Job Class를 인용하여 정의한다.
     public JobDetail geJobDetail(JobKey jobKey, String description, JobDataMap map) {
         return JobBuilder.newJob(DynamicJob.class)
                 .withIdentity(jobKey)
@@ -67,14 +67,14 @@ public class QuartzServiceImpl implements QuartzService {
                 .storeDurably()
                 .build();
     }
-    //获取Trigger (Job的触发器,执行规则)
+    // Trigger 가져오기 (Job의 트리거, 실행 규칙)
     public Trigger getTrigger(JobEntity job) {
         return TriggerBuilder.newTrigger()
                 .withIdentity(job.getName(), job.getGroup())
                 .withSchedule(CronScheduleBuilder.cronSchedule(job.getCron()))
                 .build();
     }
-    //获取JobKey,包含Name和Group
+    // JobKey 가져오기Name과 Group 포함
     public JobKey getJobKey(JobEntity job) {
         return JobKey.jobKey(job.getName(), job.getGroup());
     }
@@ -85,21 +85,21 @@ public class QuartzServiceImpl implements QuartzService {
 
 ```java
 /**
- * :@DisallowConcurrentExecution : 此标记用在实现Job的类上面,意思是不允许并发执行.
- * :注意org.quartz.threadPool.threadCount线程池中线程的数量至少要多个,否则@DisallowConcurrentExecution不生效
- * :假如Job的设置时间间隔为3秒,但Job执行时间是5秒,设置@DisallowConcurrentExecution以后程序会等任务执行完毕以后再去执行,否则会在3秒时再启用新的线程执行
+ * :@DisallowConcurrentExecution:이 태그는 Job을 구현하는 클래스에 사용되며 동시 실행은 허용되지 않습니다.
+ * :org.quartz.threadPool.threadCount 스레드 풀의 스레드 수는 적어도 여러 개여야 합니다. 그렇지 않으면 @DisallowConcurrentExecution이 적용되지 않습니다.
+ * :만약 Job의 설정 시간 간격이 3초이지만 Job 실행 시간이 5초라면, @DisallowConcurrentExecution을 설정한 후 프로그램이 작업 수행이 완료된 후에 실행되며, 그렇지 않으면 3초에 새로운 스레드를 다시 실행할 수 있습니다.
  */
 @DisallowConcurrentExecution
-@PersistJobDataAfterExecution //没有异常就更新数据 可用?
+@PersistJobDataAfterExecution //이상 없이 데이터 업데이트 가능?
 @Component
 @Slf4j
 public class DynamicJob implements Job {
     private Logger logger = LoggerFactory.getLogger(DynamicJob.class);
 
     /**
-     * 核心方法,Quartz Job真正的执行逻辑.
-     *   executorContext JobExecutionContext中封装有Quartz运行所需要的所有信息
-     * @throws JobExecutionException execute()方法只允许抛出JobExecutionException异常
+     * 핵심 접근 방식,Quartz Job의 진정한 실행 논리
+     *   executorContext JobExecutionContext에 Quartz 실행에 필요한 모든 정보가 들어 있습니다.
+     * @throws JobExecutionException execute() 메서드는 JobExecutionException 예외만 던질 수 있습니다.
      */
     @Override
     public void execute(JobExecutionContext executionContext) throws JobExecutionException {
@@ -125,7 +125,7 @@ public class DynamicJob implements Job {
                 ProcessBuilder processBuilder = new ProcessBuilder();
                 processBuilder.directory(jar.getParentFile());
                 /**
-                 * 这个是java的执行命令
+                 * 이것은 자바의 실행 명령이다
                  * java -jar
                  */
                 List<String> commands = new ArrayList<>();
@@ -167,7 +167,7 @@ public class DynamicJob implements Job {
 
     }
 
-    //打印Job执行内容的日志
+    //Job 실행 로그 출력
     private void logProcess(InputStream inputStream, InputStream errorStream) throws IOException {
         String inputLine;
         String errorLine;
