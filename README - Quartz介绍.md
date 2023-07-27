@@ -1,15 +1,17 @@
-# Quarts的相关内容
+# Quarts관련 내용
 
 ```java
-文档参考地址:
+문서 참조 주소:
 https://www.w3cschool.cn/quartz_doc/quartz_doc-1xbu2clr.html
 ```
 
-###  第一章 Quarts的Demo
+###  제1장 Quarts의 Demo
 
-#### 1.引入依赖
+#### 1.의존성 삽입
 
-注意:这里引如依赖要注意版本的问题,如果引如过低的版本,如1.8的可能有些类找不到
+주의: 여기서 인용하는 것은 버전의 문제에 주의해야 하는데, 만약 너무 낮은 버전을 이용한다면<br> 
+        예를 들면: 1.8과 같이 어떤 부류는 찾을 수 없을 것이다.
+    
 
 ```java
 <!-- https://mvnrepository.com/artifact/org.quartz-scheduler/quartz -->
@@ -20,18 +22,18 @@ https://www.w3cschool.cn/quartz_doc/quartz_doc-1xbu2clr.html
         </dependency>
 ```
 
-#### 2.相关类
+#### 2.관련 클래스
 
 \HelloJob
 
 ```java
-//这个是job的具体内容
+//구체적인 job의 내용
 public class HelloJob   implements Job {
 
     @Override
     public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
 
-        System.out.println("job1执行了");
+        System.out.println("job1실행");
 
     }
 }
@@ -46,15 +48,15 @@ public class QuartzTest {
     public static void main(String[] args) throws SchedulerException {
         Scheduler scheduler = StdSchedulerFactory.getDefaultScheduler();
         scheduler.start();
-        // 使用我们定义的HelloJob进行相关的调用
+        // 우리가 정의한 HelloJob 을 사용하여 관련된 호출
         JobDetail job = JobBuilder.newJob(HelloJob.class)
                 .withIdentity("job1", "group1")
                 .build();
 
-        //触发器的配置
+        //트리거 설정
 
         /**
-         * 配置相关的触发器
+         * 연결된 트리거 설정
          */
         Trigger trigger = TriggerBuilder.newTrigger()
                 .withIdentity("trigger1", "group1")
@@ -65,7 +67,7 @@ public class QuartzTest {
                                 .repeatForever()
                 ).build();
 
-        // 最后让我们的job按照触发器的配置进行运作
+        // 마지막으로 저희 Job 이 트리거 사양에 맞게 작동하도록 하겠습니다.
         scheduler.scheduleJob(job, trigger);
         // scheduler.shutdown();
     }
@@ -73,46 +75,46 @@ public class QuartzTest {
 
 ```
 
-### 第二章 Quartz API
+### 제2장 Quartz API
 
-Quartz API的关键接口是：
+Quartz API키 인터페이스：
 
-- Scheduler - 与调度程序交互的主要API。
-- Job - 由希望由调度程序执行的组件实现的接口。
-- JobDetail - 用于定义作业的实例。
-- Trigger（即触发器） - 定义执行给定作业的计划的组件。
-- JobBuilder - 用于定义/构建JobDetail实例，用于定义作业的实例。
-- TriggerBuilder - 用于定义/构建触发器实例。
+- Scheduler - 스케줄러와 상호 작용하는 API。
+- Job - 스케줄러에서 실행하려는 구성요소에 의해 구현 되는 인터페이스。
+- JobDetail - 작업을 정의하는 데 사용되는 예제。
+- Trigger（트리거） - 주어진 작업을 실행할 계획을 정의하는 구성 요소。
+- JobBuilder - JobDetail 인스턴스를 정의/구축하는 데 사용되며 작업을 정의하는 데 사용됩니다。
+- TriggerBuilder - 트리거 인스턴스를 정의/ 빌드하는 데 사용。
 
- Scheduler的生命期，从SchedulerFactory创建它时开始，到Scheduler调用shutdown()方法时结束；Scheduler被创建后，可以增加、删除和列举Job和Trigger，以及执行其它与调度相关的操作（如暂停Trigger）。但是，Scheduler只有在调用start()方法后，才会真正地触发trigger（即执行job)。
+Scheduler의 수명은 SchedulerFactory가 그것을 만들 때 시작하여 Scheduler가 shutdown() 메서드를 호출할 때 종료됩니다. Scheduler가 만들어진 후에는 Job과 Trigger를 추가, 삭제 및 열거하고 스케줄과 관련된 다른 작업(예: Trigger 일시 중단)을 수행할 수 있습니다.그러나 Scheduler는 start() 메서드를 호출한 후에만 trigger를 트리거합니다(즉, job 실행).。
 
-  Quartz提供的“builder”类，可以认为是一种领域特定语言（DSL，Domain Specific Language)。教程一中有相关示例，这里是其中的代码片段：（校对注：这种级联的API非常方便用户使用，大家以后写对外接口时也可以使用这种方式）
+쿼츠가 제공하는 빌더 클래스는 일종의 영역 특정 언어(DSL, Domain Specific Language)로 볼 수 있다.튜토리얼 1에 관련 예시가 있습니다. 여기 코드 조각이 있습니다. (교정 참고: 이런 캐스케이드 API는 사용자가 사용하기 매우 편리합니다. 여러분은 나중에 외부 인터페이스를 쓸 때도 이런 방식을 사용할 수 있습니다)
 
 ```java
-当Job的一个trigger被触发（稍后会讲到）时，execute（）方法由调度程序的一个工作线程调用。传递给execute()方法的JobExecutionContext对象向作业实例提供有关其“运行时”环job的一个trigger被触发后（稍后会讲到），execute()方法会被scheduler的一个工作线程调用；传递给execute()方法的JobExecutionContext对象中保存着该job运行时的一些信息 ，执行job的scheduler的引用，触发job的trigger的引用，JobDetail对象引用，以及一些其它信息。
+execute() 방법은 Job의 trigger가 트리거되면 스케줄러의 작업 쓰레드에 의해 호출됩니다.execute() 메서드에 전달된 JobExecutionContext 객체는 작업 인스턴스에 "실행 중" 링 job에 대한 트리거를 제공한 후(나중에 설명될 수 있음), execute() 메서드는 scheduler의 작업 스레드에 호출됩니다. execute() 메서드에 전달된 JobExecutionContext 객체는 job이 실행될 때 몇 가지 정보를 저장합니다. job의 scheduler 참조, job의 trigger 참조를 트리거합니다.
 
-JobDetail对象是在将job加入scheduler时，由客户端程序（你的程序）创建的。它包含job的各种属性设置，以及用于存储job实例状态信息的JobDataMap。本节是对job实例的简单介绍，更多的细节将在下一节讲到。
+        JobDetail 객체는 job을 scheduler에 가입할 때 클라이언트 프로그램(당신의 프로그램)에 의해 만들어집니다.여기에는 잡의 다양한 속성 설정과 잡 인스턴스 상태 정보를 저장하는 데 사용되는 JobDataMap이 포함됩니다.이 섹션은 Job 인스턴스에 대한 간략한 소개이며 자세한 내용은 다음 섹션에서 설명합니다.
 
-Trigger用于触发Job的执行。当你准备调度一个job时，你创建一个Trigger的实例，然后设置调度相关的属性。Trigger也有一个相关联的JobDataMap，用于给Job传递一些触发相关的参数。Quartz自带了各种不同类型的Trigger，最常用的主要是SimpleTrigger和CronTrigger。
+        Trigger는 Job의 실행을 트리거하는 데 사용됩니다.잡(job)을 예약하려고 할 때 Trigger의 인스턴스를 만든 다음 예약 관련 속성을 설정합니다.Trigger에는 Job에 트리거 관련 매개변수를 전달하는 데 사용되는 관련 Job DataMap도 있습니다.Quartz는 다양한 유형의 Trigger를 가지고 있으며 가장 일반적으로 사용되는 것은 SimpleTrigger와 CronTrigger입니다.
 
-SimpleTrigger主要用于一次性执行的Job（只在某个特定的时间点执行一次），或者Job在特定的时间点执行，重复执行N次，每次执行间隔T个时间单位。CronTrigger在基于日历的调度上非常有用，如“每个星期五的正午”，或者“每月的第十天的上午10:15”等。
+        SimpleTrigger는 주로 한 번에 실행되는 Job(특정 시점에 한 번만 실행) 또는 특정 시점에 Job을 실행하고 N회 반복하며 매번 실행 간격 T개의 시간 단위로 수행됩니다.CronTrigger는 '매주 금요일 정오' 또는 '매월 10일 오전 10:15'와 같은 달력 기반 스케줄링에 매우 유용합니다.
 
-为什么既有Job，又有Trigger呢？很多任务调度器并不区分Job和Trigger。有些调度器只是简单地通过一个执行时间和一些job标识符来定义一个Job；其它的一些调度器将Quartz的Job和Trigger对象合二为一。在开发Quartz的时候，我们认为将调度和要调度的任务分离是合理的。在我们看来，这可以带来很多好处。
+        왜 Job도 있고 Trigger도 있는거죠?많은 작업 스케줄러는 Job과 Trigger를 구별하지 않습니다.일부 스케줄러는 단순히 실행 시간과 일부 job 식별자를 통해 Job을 정의하는 반면, 다른 스케줄러는 Quartz의 Job과 Trigger 개체를 통합합니다.Quartz를 개발할 때 우리는 스케줄링할 작업을 분리하는 것이 합리적이라고 생각합니다.우리가 보기에 이것은 많은 이점을 가져올 수 있습니다.
 
-例如，Job被创建后，可以保存在Scheduler中，与Trigger是独立的，同一个Job可以有多个Trigger；这种松耦合的另一个好处是，当与Scheduler中的Job关联的trigger都过期时，可以配置Job稍后被重新调度，而不用重新定义Job；还有，可以修改或者替换Trigger，而不用重新定义与之关联的Job。
+        예를 들어, Job이 생성된 후 Scheduler에 보관할 수 있으며 Trigger와 독립적이며 동일한 Job에 여러 Trigger가 있을 수 있으며, 이러한 느슨한 결합의 또 다른 이점은 Scheduler의 Job과 관련된 trigger가 모두 만료되었을 때 Job을 나중에 재스케쥴링하도록 구성할 수 있고, 또한 관련 Job을 재정의하지 않고 트리거를 수정하거나 교체할 수 있다는 것입니다.。
 ```
 
-### 第三章 Job与JobDetail介绍
+### 제3장 Job과 JobDetail 소개
 
-我们传给scheduler一个JobDetail实例，因为我们在创建JobDetail时，将要执行的job的类名传给了JobDetail，所以scheduler就知道了要执行何种类型的job；每次当scheduler执行job时，在调用其execute(…)方法之前会创建该类的一个新的实例；执行完毕，对该实例的引用就被丢弃了，实例会被垃圾回收；这种执行策略带来的一个后果是，job必须有一个无参的构造函数（当使用默认的JobFactory时）；另一个后果是，在job类中，不应该定义有状态的数据属性，因为在job的多次执行中，这些属性的值不会保留。
+우리는 scheduler에게 JobDetail 인스턴스를 전달했습니다. 왜냐하면 우리가 JobDetail을 만들 때 실행할 job의 클래스 이름이 JobDetail로 전달되었기 때문에 scheduler는 어떤 종류의 job을 수행해야 하는지 알았기 때문입니다. scheduler가 job을 실행할 때마다 execute(...)를 호출합니다.) 메서드 이전에 이 클래스의 새로운 인스턴스를 만듭니다. 실행이 완료되면 인스턴스에 대한 참조가 버려지고 인스턴스가 스팸으로 재활용됩니다. 이 실행 정책의 한 가지 결과는 job에 무참조 생성자가 있어야 한다는 것입니다(기본 JobFactory를 사용할 때). 또 다른 결과는 job 클래스에서 상태 있는 데이터 속성이 정의되지 않아야 한다는 것입니다. 왜냐하면 job의 여러 실행 중에 이러한 속성의 값이 유지되지 않기 때문입니다.
 
-那么如何给job实例增加属性或配置呢？如何在job的多次执行中，跟踪job的状态呢？答案就是:JobDataMap，JobDetail对象的一部分。
+그렇다면 job 인스턴스에 속성이나 설정을 어떻게 추가할 수 있을까요? 어떻게 잡의 여러 실행 중에 잡의 상태를 추적할 수 있습니까?<br> 정답은 JobDataMap, JobDetail 대상의 일부입니다.。
 
 #### JobDataMap
 
-JobDataMap中可以包含不限量的（序列化的）数据对象，在job实例执行的时候，可以使用其中的数据；JobDataMap是Java Map接口的一个实现，额外增加了一些便于存取基本类型的数据的方法。
+JobDataMap에는 무제한(시퀀스화된) 데이터 객체를 포함할 수 있으며, Job 인스턴스가 실행될 때 데이터를 사용할 수 있습니다. JobDataMap은 자바 Map 인터페이스의 구현이며 기본 유형의 데이터에 쉽게 액세스할 수 있는 몇 가지 방법이 추가되었습니다.
 
-将job加入到scheduler之前，在构建JobDetail时，可以将数据放入JobDataMap，如下示例：
+job을 scheduler에 추가하기 전에 JobDetail을 구성할 때 데이터를 다음과 같은 예와 같이 JobDataMap에 넣을 수 있습니다：
 
 ```java
 //这个是job的具体内容
@@ -124,10 +126,10 @@ public class HelloJob   implements Job {
     public void execute(JobExecutionContext context) throws JobExecutionException {
 
         /**
-         * JobExecutionContext中包含对
-         * trigger的引用，JobDetail对象引用，以及一些其它信息。
+         * JobExecutionContext에 쌍 포함
+         * trigger 참조, JobDetail 객체 참조 및 기타 정보입니다.
          */
-        System.out.println("job1开始执行了");
+        System.out.println("job1실행 시작");
 
         JobKey key = context.getJobDetail().getKey();
 
@@ -142,42 +144,43 @@ public class HelloJob   implements Job {
 }
 ```
 
-#### Job状态与并发
+#### Job 상태 및 동시성
 
-关于job的状态数据（即JobDataMap）和并发性，还有一些地方需要注意。在job类上可以加入一些注解，这些注解会影响job的状态和并发性。
+Job의 상태 데이터(즉, Job DataMap) 및 동시성과 관련하여 주의해야 할 부분이 몇 가지 있습니다.<br>
+job 클래스에 일부 주해를 추가할 수 있으며, 이러한 어노테이션은 job의 상태와 동시성에 영향을 미칩니다.。
 
-@DisallowConcurrentExecution：将该注解加到job类上，告诉Quartz不要并发地执行同一个job定义（这里指特定的job类）的多个实例。请注意这里的用词。拿前一小节的例子来说，如果“SalesReportJob”类上有该注解，则同一时刻仅允许执行一个“SalesReportForJoe”实例，但可以并发地执行“SalesReportForMike”类的一个实例。所以该限制是针对JobDetail的，而不是job类的。但是我们认为（在设计Quartz的时候）应该将该注解放在job类上，因为job类的改变经常会导致其行为发生变化。
+@DisallowConcurrentExecution: 이 어노테이션을 job 클래스에 추가하고 Quartz에게 동일한 job 정의(여기서는 특정 job 클래스를 지칭)를 동시에 수행하지 말라고 말합니다.여기 용어에 주의하세요.이전 섹션의 예를 들어, 'Sales Report Job' 클래스에 이 어노테이션이 있는 경우 동일한 시점에 하나의 'Sales Report For Joe' 인스턴스만 허용되지만 'Sales Report For Mike' 클래스의 인스턴스는 동시에 실행될 수 있습니다.따라서 이 제한은 Job Detail이 아닌 Job Detail을 대상으로 합니다.그러나 우리는 (Quartz를 설계할 때) 이 어노테이션을 job 클래스에 배치해야 한다고 생각합니다.
 
-@PersistJobDataAfterExecution：将该注解加在job类上，告诉Quartz在成功执行了job类的execute方法后（没有发生任何异常），更新JobDetail中JobDataMap的数据，使得该job（即JobDetail）在下一次执行的时候，JobDataMap中是更新后的数据，而不是更新前的旧数据。和 @DisallowConcurrentExecution注解一样，尽管注解是加在job类上的，但其限制作用是针对job实例的，而不是job类的。由job类来承载注解，是因为job类的内容经常会影响其行为状态（比如，job类的execute方法需要显式地“理解”其”状态“）。
+@PersistJobDataAfterExecution: 이 어노테이션을 job 클래스에 추가하고 Quartz에게 job 클래스의 execute 메서드가 성공적으로 실행된 후(아무런 이상이 발생하지 않음) JobDetail의 JobDataMap 데이터를 업데이트하여 다음 실행 시 JobDetail이 업데이트 이전의 오래된 데이터가 아닌 업데이트된 데이터임을 알립니다.@DisallowConcurrentExecution 어노테이션과 마찬가지로 어노테이션은 job 클래스에 추가되지만 제한 효과는 job 클래스가 아닌 job 인스턴스에 대한 것입니다.job의 내용은 종종 행동 상태에 영향을 미치기 때문에 job 클래스에 의해 주석이 전달됩니다(예: job 클래스의 execute 방법은 명시적으로 '상태'를 '이해'해야 함).
 
-如果你使用了@PersistJobDataAfterExecution注解，我们强烈建议你同时使用@DisallowConcurrentExecution注解，因为当同一个job（JobDetail）的两个实例被并发执行时，由于竞争，JobDataMap中存储的数据很可能是不确定的。
+만약 당신이 @PersistJobDataAfterExecution 주석을 사용했다면, 우리는 동일한 job(JobDetail)의 두 가지 인스턴스가 동시에 실행될 때 경쟁으로 인해 JobDataMap에 저장된 데이터가 불확실할 가능성이 높기 때문에 @DisallowConcurrentExecution 주석을 함께 사용하는 것을 강력히 권장합니다.。
 
-### 第四章 Quartz中Triggers介绍
+### 제4장 Quartz에서 Triggers 소개
 
-### Trigger的公共属性
+### Trigger의 공통 속성
 
-所有类型的trigger都有TriggerKey这个属性，表示trigger的身份；除此之外，trigger还有很多其它的公共属性。这些属性，在构建trigger的时候可以通过TriggerBuilder设置。
+모든 유형의 트리거에는 Trigger Key라는 속성이 있으며, 이는 trigger의 정체성을 나타냅니다.이러한 속성은 Trigger를 구성할 때 Trigger Builder를 통해 설정할 수 있습니다.
 
-trigger的公共属性有：
+트리거의 공통 속성은 다음과 같습니다：
 
-- jobKey属性：当trigger触发时被执行的job的身份；
-- startTime属性：设置trigger第一次触发的时间；该属性的值是java.util.Date类型，表示某个指定的时间点；有些类型的trigger，会在设置的startTime时立即触发，有些类型的trigger，表示其触发是在startTime之后开始生效。比如，现在是1月份，你设置了一个trigger–“在每个月的第5天执行”，然后你将startTime属性设置为4月1号，则该trigger第一次触发会是在几个月以后了(即4月5号)。
-- endTime属性：表示trigger失效的时间点。比如，”每月第5天执行”的trigger，如果其endTime是7月1号，则其最后一次执行时间是6月5号。
+- jobKey 속성: trigger가 트리거될 때 실행되는 job의 ID입니다.
+- startTime 속성: trigger가 처음 트리거할 시간을 설정합니다. 이 속성의 값은 java입니다.util.Date 유형은 지정된 시점을 나타냅니다. 일부 trigger는 startTime을 설정할 때 즉시 트리거하며, 일부 trigger는 startTime 이후에 트리거가 시작됨을 나타냅니다.예를 들어, 지금이 1월이고 '매달 5일째에 실행'이라는 트리거를 설정한 다음 startTime 속성을 4월 1일로 설정하면 트리거의 첫 번째 트리거는 몇 개월 후(4월 5일)가 됩니다.
+- endTime 속성: 트리거가 만료되는 시점을 나타냅니다.<br>예를 들어, "매월 5일째에 실행"하는 트리거의 경우 엔드타임이 7월 1일이라면 마지막 실행은 6월 5일입니다。
 
 ```java
 /**
-  * 配置相关的触发器
+  * 연결된 트리거 설정
    */
         Trigger trigger = TriggerBuilder.newTrigger()
                 .withIdentity("trigger1", "group1")
                 .withSchedule(  dailyAtHourAndMinute(15,44))
                 .build();
 
-        // 最后让我们的job按照触发器的配置进行运作
+        // 마지막으로 저희 Job이 트리거 사양에 맞게 작동하도록 하겠습니다.
         scheduler.scheduleJob(job, trigger);
 ```
 
-指定时间触发 
+시간별 트리거 지정
 
 ```java
 JobDetail job = JobBuilder.newJob(DumbJob.class)
@@ -187,7 +190,7 @@ JobDetail job = JobBuilder.newJob(DumbJob.class)
                 .usingJobData("myFloatValue",3.14F )
 
                 .build();
-//配置相关的排除日期
+//관련 제외 날짜 설정
  HolidayCalendar cal =  new HolidayCalendar();
         cal.addExcludedDate(new Date("2019/5/13"));
 
@@ -205,7 +208,7 @@ JobDetail job = JobBuilder.newJob(DumbJob.class)
 
 ```
 
-SimpleTrigger的Misfire策略常量：
+SimpleTrigger의 Misfire 정책 상수:
 
 ```java
 MISFIRE_INSTRUCTION_IGNORE_MISFIRE_POLICY
@@ -218,17 +221,17 @@ MISFIRE_INSTRUCTION_RESCHEDULE_NEXT_WITH_EXISTING_COUNT
 
 
 
-### 第四章 CronTrigger
+### 제4장CronTrigger
 
-CronTrigger通常比Simple Trigger更有用，如果您需要基于日历的概念而不是按照SimpleTrigger的精确指定间隔进行重新启动的作业启动计划。
+Simple Trigger의 정확한 간격에 따라 재시작을 수행하는 작업 시작 계획이 필요한 경우 CronTrigger는 Simple Trigger보다 일반적으로 더 유용합니다.
 
-使用CronTrigger，您可以指定号时间表，例如“每周五中午”或“每个工作日和上午9:30”，甚至“每周一至周五上午9:00至10点之间每5分钟”和1月份的星期五“。
+CronTrigger를 사용하면 '매주 금요일 정오' 또는 '매 근무일 및 오전 9:30', 심지어 '매주 월요일부터 금요일 오전 9:00~10시 사이 매 5분' 및 1월 금요일과 같은 번호 일정을 지정할 수 있습니다.
 
-即使如此，和SimpleTrigger一样，CronTrigger有一个startTime，它指定何时生效，以及一个（可选的）endTime，用于指定何时停止计划。
+그래도 SimpleTrigger와 마찬가지로 CronTrigger는 언제 실행되는지 지정하는 startTime과 계획을 중지할 시기를 지정하는 (옵션)endTime을 가집니다.。
 
 ### Cron Expressions
 
-Cron-Expressions用于配置CronTrigger的实例。Cron Expressions是由七个子表达式组成的字符串，用于描述日程表的各个细节。这些子表达式用空格分隔，并表示：
+Cron-Expressions는 CronTrigger 인스턴스를 구성하는 데 사용됩니다. Cron Expressions는 스케줄의 세부 사항을 설명하는 7개의 하위 표현식으로 구성된 문자열입니다.이 하위 표현식은 공백으로 구분되며, 표시됨：
 
 1. Seconds
 2. Minutes
@@ -240,22 +243,22 @@ Cron-Expressions用于配置CronTrigger的实例。Cron Expressions是由七个�
 
 ### JDBC JobStore
 
-JDBCJobStore也被恰当地命名 - 它通过JDBC将其所有数据保存在数据库中。因此，配置比RAMJobStore要复杂一点，而且也不是那么快。但是，性能下降并不是很糟糕，特别是如果您在主键上构建具有索引的数据库表。在相当现代的一套具有体面的LAN（在调度程序和数据库之间）的机器上，检索和更新触发triggers的时间通常将小于10毫秒。
+JDBC JobStore도 적절하게 명명되었으며 JDBC를 통해 모든 데이터를 데이터베이스에 저장합니다.그래서 RAMJobStore보다 사양이 조금 더 복잡하고 빠르지도 않습니다.그러나 특히 주 키에 인덱스가 있는 데이터베이스 테이블을 구성하면 성능 저하가 그리 나쁘지 않습니다.근사한 LAN(스케줄링 프로그램과 데이터베이스 사이)이 있는 상당히 현대적인 시스템에서 검색 및 업데이트가 트리거하는 시간은 일반적으로 10밀리초 미만입니다.
 
-JDBCJobStore几乎与任何数据库一起使用，已被广泛应用于Oracle，PostgreSQL，MySQL，MS SQLServer，HSQLDB和DB2。要使用JDBCJobStore，必须首先创建一组数据库表以供Quartz使用。您可以在Quartz发行版的“docs / dbTables”目录中找到表创建SQL脚本。如果您的数据库类型尚未有脚本，请查看其中一个脚本，然后以数据库所需的任何方式进行修改。需要注意的一点是，在这些脚本中，所有的表都以前缀“QRTZ_”开始（如表“QRTZ_TRIGGERS”和“QRTZ_JOB_DETAIL”）。只要你通知JDBCJobStore前缀是什么（在你的Quartz属性中），这个前缀实际上可以是你想要的。对于多个调度程序实例，使用不同的前缀可能有助于创建多组表，
+JDBC JobStore는 거의 모든 데이터베이스와 함께 사용되며 Oracle, PostgreSQL, MySQL, MS SQLServer, HSQLDB 및 DB2에 널리 사용되었습니다.JDBC JobStore를 사용하려면 먼저 Quartz에서 사용할 데이터베이스 테이블 세트를 생성해야 합니다.Quartz 배포판의 "docs/dbTables" 카탈로그에서 표를 찾아 SQL 스크립트를 작성할 수 있습니다.데이터베이스 유형에 아직 스크립트가 없으면 스크립트 중 하나를 보고 데이터베이스에 필요한 대로 수정하십시오.이러한 스크립트에서 모든 테이블은 접두사 'QRTZ_'로 시작된다는 점에 유의해야 합니다(예: 테이블 'QRTZ_TRIGGERS' 및 'QRTZ_JOB_DETAIL'.JDBC JobStore 접두사가 무엇인지(Quartz 속성에서) 알려주면 이 접두사는 실제로 원하는 것이 될 수 있습니다.여러 스케줄러 인스턴스의 경우 다른 접두사를 사용하면 여러 테이블을 만드는 데 도움이 될 수 있습니다.
 
-创建表后，在配置和启动JDBCJobStore之前，您还有一个重要的决定。您需要确定应用程序需要哪种类型的事务。如果您不需要将调度命令（例如添加和删除triggers）绑定到其他事务，那么可以通过使用JobStoreTX作为JobStore 来管理事务（这是最常见的选择）。
+표를 만든 후 JDBC JobStore를 구성하고 시작하기 전에 중요한 결정이 하나 더 있습니다.앱에 필요한 트랜잭션의 종류를 결정해야 합니다.triggers 추가 및 삭제와 같은 스케줄링 명령을 다른 트랜잭션으로 바인딩할 필요가 없는 경우 JobStoreTX를 JobStore로 사용하여 트랜잭션을 관리할 수 있습니다(가장 일반적인 옵션).
 
-如果您需要Quartz与其他事务（即J2EE应用程序服务器）一起工作，那么您应该使用JobStoreCMT - 在这种情况下，Quartz将让应用程序服务器容器管理事务。
+Quartz가 다른 트랜잭션(즉, J2EE 응용 프로그램 서버)과 함께 작업해야 하는 경우 JobStoreCMT를 사용해야 합니다. 이 경우 Quartz는 응용 프로그램 서버 컨테이너에서 트랜잭션을 관리합니다.
 
-最后一个难题是设置一个DataSource，JDBCJobStore可以从中获取与数据库的连接。DataSources在Quartz属性中使用几种不同的方法之一进行定义。一种方法是让Quartz创建和管理DataSource本身 - 通过提供数据库的所有连接信息。另一种方法是让Quartz使用由Quartz正在运行的应用程序服务器管理的DataSource，通过提供JDBCJobStore DataSource的JNDI名称。有关属性的详细信息，请参阅“docs / config”文件夹中的示例配置文件。
+마지막 문제는 JDBC JobStore가 데이터베이스에 대한 연결을 얻을 수 있는 DataSource를 설정하는 것입니다.DataSources는 Quartz 속성에서 몇 가지 다른 방법 중 하나를 사용하여 정의됩니다.한 가지 방법은 데이터베이스에 대한 모든 연결 정보를 제공함으로써 Quartz가 DataSource 자체를 만들고 관리할 수 있도록 하는 것입니다.또 다른 방법은 Quartz가 실행 중인 응용 프로그램 서버에서 관리하는 DataSource를 Quartz가 JDBCJobStore DataSource의 JNDI 이름을 제공함으로써 사용할 수 있도록 하는 것입니다.속성에 대한 자세한 내용은 "docs/config" 폴더의 샘플 프로필을 참조하십시오.
 
-要使用JDBCJobStore（并假定您使用的是StdSchedulerFactory），首先需要将Quartz配置的JobStore类属性设置为org.quartz.impl.jdbcjobstore.JobStoreTX或org.quartz.impl.jdbcjobstore.JobStoreCMT - 具体取决于根据上述几段的解释，您所做的选择。
+JDBCJobStore를 사용하려면 먼저 Quartz에서 설정한 JobStore 클래스 속성을 org로 설정해야 합니다.quartz.impl.jdbcjobstore.JobStoreTX나 org.quartz.impl.jdbcjobstore.JobStoreCMT - 위의 단락의 해석에 따라 선택됩니다.。
 
 #### TerracottaJobStore
 
-TerracottaJobStore提供了一种缩放和鲁棒性的手段，而不使用数据库。这意味着您的数据库可以免受Quartz的负载，可以将其所有资源保存为应用程序的其余部分。
+Terracotta JobStore는 데이터베이스를 사용하지 않고 스케일링 및 견고성을 위한 수단을 제공합니다.이것은 당신의 데이터베이스가 Quartz의 부하로부터 자유로워지고 그 모든 자원을 애플리케이션의 나머지 부분으로 저장할 수 있다는 것을 의미합니다.
 
-TerracottaJobStore可以运行群集或非群集，并且在任一情况下，为应用程序重新启动之间持续的作业数据提供存储介质，因为数据存储在Terracotta服务器中。它的性能比通过JDBCJobStore使用数据库要好得多（约一个数量级更好），但比RAMJobStore要慢。
+Terracotta JobStore는 클러스터링 또는 비클러스터링을 실행할 수 있으며 두 경우 모두 데이터가 Terracotta 서버에 저장되기 때문에 응용 프로그램 재시작 사이에 지속적인 작업 데이터를 위한 저장 매체를 제공합니다.JDBC JobStore를 통해 데이터베이스를 사용하는 것보다 훨씬 우수하지만(약 한 자릿수 더 좋음), RAMJobStore보다는 느립니다.
 
-要使用TerracottaJobStore（并且假设您使用的是StdSchedulerFactory），只需将类名称org.quartz.jobStore.class = org.terracotta.quartz.TerracottaJobStore指定为用于配置石英的JobStore类属性，并添加一个额外的行配置来指定Terracotta服务器的位置：
+TerracottaJobStore를 사용하려면 클래스 이름을 org.quartz.잡스토어class = org.테라코타quartz.TerracottaJobStore는 쿼츠 설정을 위한 JobStore 클래스 속성을 지정하고 추가 행 구성을 추가하여 Terracotta 서버의 위치를 지정합니다：
